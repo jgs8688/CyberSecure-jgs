@@ -1,0 +1,14 @@
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer Shield -->
+  <path d="M50 10L82 26V54C82 70 65 85 50 90C35 85 18 70 18 54V26L50 10Z"
+        fill="none" stroke="#3b82f6" stroke-width="4"/>
+
+  <!-- Inner Top Lines Only -->
+  <path d="M50 18L72 30" fill="none" stroke="#3b82f6" stroke-width="2"/>
+  <path d="M50 18L28 30" fill="none" stroke="#3b82f6" stroke-width="2"/>
+
+  <!-- Letter S -->
+  <text x="50" y="63" font-family="Segoe UI, sans-serif"
+        font-size="36" text-anchor="middle"
+        fill="#3b82f6" font-weight="bold">S</text>
+</svg>
