@@ -23,7 +23,8 @@ export default function SignUp() {
   });
   const [visible, setVisible] = useState<boolean>(false);
   const [emailVerified, setEmailVerified] = useState<boolean>(false);
-  const [otp, setOtp] = useState<boolean>(false);
+  const [otp, setOtp] = useState<string>("");
+  const [otpSent, setOtpSent] = useState<boolean>(false); // New state to track if OTP was sent
   const [agree, setAgree] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [otpLoading, setOtpLoading] = useState<boolean>(false);
@@ -95,6 +96,8 @@ export default function SignUp() {
         toast.success("Sign up successful! Please sign in to continue.");
         setUserData({ username: "", email: "", password: "" });
         setEmailVerified(false);
+        setOtpSent(false);
+        setOtp("");
         setAgree(false);
         navigate("/signin");
       }
@@ -143,7 +146,8 @@ export default function SignUp() {
       
       if (res.status === 200) {
         toast.success("Verification code sent to your email");
-        setOtp(true);
+        setOtpSent(true);
+        setOtp(""); // Clear any existing OTP
       }
     } catch (error: any) {
       console.error("Error verifying email:", error);
@@ -171,7 +175,8 @@ export default function SignUp() {
       });
 
       if (res.status === 200) {
-        setOtp(false);
+        setOtpSent(false);
+        setOtp("");
         setEmailVerified(true);
         toast.success("Email verified successfully");
       }
@@ -283,7 +288,7 @@ export default function SignUp() {
                     : 'text-blue-600 hover:text-blue-700'
               } transition-colors`}
             >
-              {emailVerified ? "✓ Verified" : otpLoading ? "Sending..." : otp ? "Resend OTP" : "Verify Email"}
+              {emailVerified ? "✓ Verified" : otpLoading ? "Sending..." : otpSent ? "Resend OTP" : "Verify Email"}
             </button>
           </div>
           <input
@@ -296,7 +301,7 @@ export default function SignUp() {
             disabled={emailVerified}
           />
 
-          {otp && !emailVerified && (
+          {otpSent && !emailVerified && (
             <div className="mb-6">
               <label className="ml-2 text-sm md:text-base text-red-600 font-medium">
                 Enter 6-digit verification code
@@ -306,9 +311,10 @@ export default function SignUp() {
                 className="w-full h-12 outline-0 border-b-2 border-red-400 focus:border-red-600 transition-colors px-2"
                 placeholder="Enter OTP"
                 maxLength={6}
+                value={otp}
                 onChange={(e) => {
-                  const value = e.target.value.replace(/\D/g, ''); // Only digits
-                  e.target.value = value;
+                  const value = e.target.value; // allow letters + numbers
+                  setOtp(value);
                   if (value.length === 6) {
                     verifyOtp(value);
                   }
@@ -320,7 +326,7 @@ export default function SignUp() {
             </div>
           )}
 
-          {!otp && emailVerified && (
+          {!otpSent && emailVerified && (
             <div className="mb-6">
               <div className="flex justify-between items-center">
                 <label className="ml-2 text-sm md:text-base font-medium">Password</label>
@@ -351,7 +357,7 @@ export default function SignUp() {
           )}
         </form>
 
-        {!otp && emailVerified && (
+        {!otpSent && emailVerified && (
           <div className="flex items-center justify-center text-sm md:text-base mb-6">
             <input
               type="checkbox"
@@ -372,7 +378,7 @@ export default function SignUp() {
         <button
           type="button"
           onClick={handleSignup}
-          disabled={loading || otp || !emailVerified}
+          disabled={loading || otpSent || !emailVerified}
           className="w-full h-12 mt-4 text-white bg-[#3F51B5] rounded-lg hover:bg-[#3949AB] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium"
         >
           {loading ? "Creating Account..." : "Sign Up"}

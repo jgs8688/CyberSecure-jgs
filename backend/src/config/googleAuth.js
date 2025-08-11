@@ -15,20 +15,25 @@ passport.use(
     },
     async function (accessToken, refreshToken, profile, done) {
       try {
-        const randomPassword = Math.random().toString(36).slice(-6);
-        const hashedPassword = await bcrypt.hash(randomPassword, 10);
-
+        // Check if user already exists with this email
         const userExists = await User.findOne({
           email: profile.emails[0].value,
         });
+        
         if (userExists) {
           return done(null, userExists);
         }
 
+        // Generate random password for Google users
+        const randomPassword = Math.random().toString(36).slice(-6) + Math.random().toString(36).slice(-6);
+        const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+        // Create new user
         const user = await User.create({
           username: profile.displayName,
           email: profile.emails[0].value,
           password: hashedPassword,
+          isGoogleUser: true, // Optional: flag to identify Google users
         });
 
         return done(null, user);
@@ -40,9 +45,18 @@ passport.use(
   )
 );
 
+// Serialize user for session storage
 passport.serializeUser((user, done) => {
-  done(null, user.id);
+  done(null, user._id); // Use _id instead of id for MongoDB
 });
-passport.deserializeUser((user, done) => {
-  done(null, user);
+
+// Deserialize user from session - FIXED
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findById(id);
+    done(null, user);
+  } catch (error) {
+    console.error("Error deserializing user:", error);
+    done(error, null);
+  }
 });
